@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>¿Cuánto está perdiendo tu consulta? — INFINIX</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Raleway:wght@400;600;700;800&family=Nunito+Sans:wght@400;600&family=DM+Mono:wght@400;500&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:             #07070f;
+      --surface:        rgba(255,255,255,0.04);
+      --surface-hover:  rgba(255,255,255,0.07);
+      --border:         rgba(255,255,255,0.08);
+      --border-active:  rgba(124,58,237,0.5);
+      --text:           #f0f0f8;
+      --muted:          rgba(240,240,248,0.82);
+      --dim:            rgba(240,240,248,0.58);
+      --purple:         #7C3AED;
+      --cyan:           #06B6D4;
+      --green:          #10B981;
+      --pink:           #EC4899;
+      --gradient:       linear-gradient(135deg, #7C3AED 0%, #06B6D4 100%);
+      --glow-p:         rgba(124,58,237,0.25);
+      --glow-c:         rgba(6,182,212,0.15);
+      --head:           'Raleway', sans-serif;
+      --body:           'Nunito Sans', sans-serif;
+      --mono:           'DM Mono', monospace;
+      --r:              16px;
+      --r-sm:           10px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--body);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Ambient glow */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 25% 15%, var(--glow-p), transparent),
+        radial-gradient(ellipse 50% 40% at 75% 85%, var(--glow-c), transparent);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Layout ── */
+    #app {
+      position: relative; z-index: 1;
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 32px 16px 48px;
+    }
+
+    .screen {
+      display: none;
+      width: 100%; max-width: 580px;
+      animation: rise .4s cubic-bezier(.25,.8,.25,1);
+    }
+    .screen.active { display: flex; flex-direction: column; }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Logo ── */
+    .logo {
+      text-align: center;
+      margin-bottom: 32px;
+      line-height: 1;
+    }
+    .logo svg { width: 140px; height: auto; }
+
+    /* ── Card ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 40px 36px;
+      backdrop-filter: blur(16px);
+    }
+
+    /* ── Badge ── */
+    .badge {
+      display: inline-flex; align-items: center; gap: 7px;
+      font-family: var(--mono); font-size: 11px;
+      letter-spacing: 2px; text-transform: uppercase;
+      padding: 5px 14px; border-radius: 99px;
+      margin-bottom: 24px;
+    }
+    .badge-cyan  { color: var(--cyan);   border: 1px solid rgba(6,182,212,0.35); }
+    .badge-purple{ color: var(--purple); border: 1px solid rgba(124,58,237,0.35); }
+    .badge-pink  { color: var(--pink);   border: 1px solid rgba(236,72,153,0.35); }
+    .badge-green { color: var(--green);  border: 1px solid rgba(16,185,129,0.35); }
+
+    .badge .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: currentColor;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.4} }
+
+    /* ── Typography ── */
+    h1.intro-title {
+      font-family: var(--head);
+      font-size: clamp(26px, 5.5vw, 38px);
+      font-weight: 800; line-height: 1.15;
+      margin-bottom: 16px;
+    }
+    h1.intro-title .grad {
+      background: var(--gradient);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .subtitle {
+      font-size: 16px; color: var(--muted);
+      line-height: 1.65; margin-bottom: 28px;
+    }
+
+    /* ── Intro features ── */
+    .features {
+      display: flex; flex-wrap: wrap; gap: 8px 16px;
+      margin-bottom: 36px;
+    }
+    .feat {
+      display: flex; align-items: center; gap: 7px;
+      font-family: var(--mono); font-size: 12px; color: var(--muted);
+    }
+    .feat::before {
+      content: '';
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--gradient); flex-shrink: 0;
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      width: 100%; padding: 16px 24px;
+      background: var(--gradient);
+      border: none; border-radius: 12px;
+      color: #fff; font-family: var(--head);
+      font-size: 16px; font-weight: 700;
+      letter-spacing: .4px;
+      cursor: pointer; transition: opacity .2s, transform .15s;
+    }
+    .btn:hover  { opacity: .9; transform: translateY(-2px); }
+    .btn:active { transform: translateY(0); }
+    .btn:disabled { opacity: .35; pointer-events: none; }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border); border-radius: 10px;
+      color: var(--muted); font-family: var(--body); font-size: 14px;
+      padding: 12px 20px; cursor: pointer;
+      transition: border-color .2s, color .2s;
+    }
+    .btn-ghost:hover { border-color: var(--purple); color: var(--text); }
+
+    /* ── Progress ── */
+    .progress-wrap { margin-bottom: 28px; }
+    .progress-meta {
+      display: flex; justify-content: space-between; align-items: center;
+      font-family: var(--mono); font-size: 11px; color: var(--dim);
+      text-transform: uppercase; letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
+    .progress-bar { height: 3px; background: var(--border); border-radius: 99px; overflow: hidden; }
+    .progress-fill {
+      height: 100%; background: var(--gradient);
+      border-radius: 99px; transition: width .5s cubic-bezier(.4,0,.2,1);
+    }
+    .progress-dots {
+      display: flex; gap: 6px; margin-top: 10px;
+      justify-content: center;
+    }
+    .pdot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--border); transition: all .3s;
+    }
+    .pdot.done  { background: var(--purple); }
+    .pdot.active{ background: var(--cyan); transform: scale(1.3); }
+
+    /* ── Question ── */
+    .q-label {
+      font-family: var(--mono); font-size: 11px;
+      letter-spacing: 2px; text-transform: uppercase;
+      color: var(--cyan); margin-bottom: 14px;
+    }
+    .q-text {
+      font-family: var(--head);
+      font-size: clamp(18px, 3.8vw, 23px);
+      font-weight: 700; line-height: 1.35;
+      margin-bottom: 28px;
+    }
+    .q-options { display: flex; flex-direction: column; gap: 10px; }
+    .q-opt {
+      display: flex; align-items: flex-start; gap: 14px;
+      padding: 15px 18px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; cursor: pointer; text-align: left;
+      font-size: 15px; color: var(--text);
+      transition: border-color .2s, background .2s;
+      width: 100%;
+    }
+    .q-opt:hover { border-color: var(--purple); background: var(--surface-hover); }
+    .q-opt.sel   { border-color: var(--purple); background: rgba(124,58,237,0.12); }
+
+    .opt-radio {
+      width: 20px; height: 20px; border-radius: 50%;
+      border: 2px solid var(--border);
+      flex-shrink: 0; margin-top: 1px;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .2s;
+    }
+    .q-opt.sel .opt-radio {
+      border-color: var(--purple); background: var(--purple);
+    }
+    .q-opt.sel .opt-radio::after {
+      content: ''; width: 6px; height: 6px;
+      border-radius: 50%; background: #fff;
+    }
+
+    .q-nav {
+      display: flex; gap: 10px; margin-top: 24px;
+      align-items: center;
+    }
+    .q-nav .btn-ghost { flex-shrink: 0; }
+
+    /* ── Capture ── */
+    .capture-heading {
+      font-family: var(--head);
+      font-size: clamp(20px, 4vw, 27px);
+      font-weight: 800; line-height: 1.25;
+      margin-bottom: 10px;
+    }
+    .capture-sub {
+      font-size: 15px; color: var(--muted);
+      line-height: 1.6; margin-bottom: 28px;
+    }
+
+    /* Preview teaser above the form */
+    .result-teaser {
+      display: flex; align-items: center; gap: 12px;
+      background: rgba(6,182,212,0.06);
+      border: 1px solid rgba(6,182,212,0.15);
+      border-radius: 12px; padding: 14px 16px;
+      margin-bottom: 24px;
+    }
+    .teaser-icon {
+      font-size: 22px; flex-shrink: 0;
+    }
+    .teaser-text {
+      font-size: 13px; color: var(--muted); line-height: 1.45;
+    }
+    .teaser-text strong { color: var(--text); }
+
+    .form-field { margin-bottom: 16px; }
+    .form-label {
+      display: block;
+      font-family: var(--mono); font-size: 11px;
+      letter-spacing: 1px; text-transform: uppercase;
+      color: var(--dim); margin-bottom: 7px;
+    }
+    .form-input, .form-select {
+      width: 100%; padding: 13px 16px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; color: var(--text);
+      font-family: var(--body); font-size: 15px;
+      outline: none; transition: border-color .2s;
+      appearance: none;
+    }
+    .form-input:focus, .form-select:focus { border-color: var(--purple); }
+    .form-input::placeholder { color: var(--dim); }
+    .form-select option { background: #12122a; color: var(--text); }
+
+    .privacy-note {
+      font-size: 12px; color: var(--dim);
+      text-align: center; margin-top: 12px; line-height: 1.5;
+    }
+
+    /* ── Processing ── */
+    .processing-wrap {
+      text-align: center; padding: 70px 20px;
+    }
+    .spinner {
+      width: 56px; height: 56px; border-radius: 50%;
+      border: 3px solid var(--border);
+      border-top-color: var(--purple);
+      animation: spin .8s linear infinite;
+      margin: 0 auto 24px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .processing-text { font-family: var(--head); font-size: 18px; font-weight: 600; margin-bottom: 6px; }
+    .processing-sub  { font-size: 13px; color: var(--muted); }
+
+    /* ── Result ── */
+    .result-name {
+      font-family: var(--mono); font-size: 12px;
+      color: var(--dim); letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+    .result-title {
+      font-family: var(--head);
+      font-size: clamp(21px, 4.5vw, 29px);
+      font-weight: 800; line-height: 1.2;
+      margin-bottom: 12px;
+    }
+    .result-desc {
+      font-size: 15px; color: var(--muted);
+      line-height: 1.65; margin-bottom: 28px;
+    }
+
+    /* Loss box */
+    .loss-box {
+      background: rgba(124,58,237,0.08);
+      border: 1px solid rgba(124,58,237,0.22);
+      border-radius: 16px; padding: 26px 24px;
+      text-align: center; margin-bottom: 20px;
+    }
+    .loss-label {
+      font-family: var(--mono); font-size: 11px;
+      letter-spacing: 2px; text-transform: uppercase;
+      color: var(--dim); margin-bottom: 10px;
+    }
+    .loss-amount {
+      font-family: var(--head);
+      font-size: clamp(40px, 9vw, 58px);
+      font-weight: 800; line-height: 1;
+      background: var(--gradient);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 5px;
+    }
+    .loss-per { font-size: 13px; color: var(--muted); }
+
+    /* Breakdown */
+    .breakdown {
+      border: 1px solid var(--border); border-radius: 14px;
+      overflow: hidden; margin-bottom: 20px;
+    }
+    .breakdown-head {
+      font-family: var(--mono); font-size: 11px;
+      letter-spacing: 1px; text-transform: uppercase;
+      color: var(--dim); padding: 12px 18px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+    }
+    .breakdown-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 13px 18px;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+    }
+    .breakdown-row:last-child { border-bottom: none; }
+    .breakdown-row.total { font-weight: 700; background: rgba(124,58,237,0.06); }
+    .bd-val { font-family: var(--mono); color: var(--cyan); }
+    .bd-val.total-val {
+      background: var(--gradient);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Solution box */
+    .solution-box {
+      background: rgba(6,182,212,0.05);
+      border: 1px solid rgba(6,182,212,0.14);
+      border-radius: 14px; padding: 22px 20px;
+      margin-bottom: 20px;
+    }
+    .solution-title {
+      font-family: var(--head); font-size: 15px;
+      font-weight: 700; margin-bottom: 14px;
+    }
+    .solution-items {
+      list-style: none; display: flex;
+      flex-direction: column; gap: 9px;
+    }
+    .solution-items li {
+      font-size: 14px; color: var(--muted);
+      display: flex; align-items: flex-start; gap: 10px;
+      line-height: 1.45;
+    }
+    .solution-items li::before {
+      content: '→'; color: var(--cyan);
+      font-family: var(--mono); flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* ROI note */
+    .roi-note {
+      font-family: var(--mono); font-size: 12px;
+      color: var(--dim); text-align: center;
+      padding: 12px 16px;
+      background: rgba(16,185,129,0.06);
+      border: 1px solid rgba(16,185,129,0.15);
+      border-radius: 10px; margin-bottom: 24px;
+      line-height: 1.5;
+    }
+    .roi-note .hi { color: var(--green); }
+
+    /* ── Benchmark box ── */
+    .benchmark-box {
+      background: rgba(124,58,237,0.06);
+      border: 1px solid rgba(124,58,237,0.2);
+      border-radius: 10px; padding: 14px 16px;
+      margin: 20px 0; display: flex; gap: 12px; align-items: flex-start;
+    }
+    .benchmark-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+    .benchmark-text { font-size: 13px; color: var(--muted); line-height: 1.5; }
+    .benchmark-text strong { color: var(--purple); }
+
+    /* ── Tips section ── */
+    .tips-section { margin: 20px 0; }
+    .tips-title {
+      font-size: 12px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1px; color: var(--dim); margin-bottom: 12px;
+    }
+    .tip-item {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 12px 14px; margin-bottom: 8px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 10px;
+    }
+    .tip-num {
+      width: 24px; height: 24px; border-radius: 50%;
+      background: rgba(124,58,237,0.15); color: var(--purple);
+      font-size: 11px; font-weight: 800; display: flex;
+      align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .tip-content { flex: 1; }
+    .tip-content strong { display: block; font-size: 13px; margin-bottom: 3px; color: var(--fg); }
+    .tip-content span { font-size: 12px; color: var(--dim); line-height: 1.4; }
+
+    /* ── Section divider ── */
+    .section-divider {
+      height: 1px; background: rgba(255,255,255,0.07);
+      margin: 20px 0;
+    }
+
+    .result-disclaimer {
+      font-size: 11px; color: var(--dim);
+      text-align: center; margin-top: 16px; line-height: 1.5;
+    }
+
+    /* ── Mobile ── */
+    @media (max-width: 520px) {
+      #app { padding: 20px 12px 40px; }
+      .logo { margin-bottom: 20px; }
+      .logo svg { width: 110px; }
+      .card { padding: 24px 18px; border-radius: 16px; }
+      .q-nav .btn-ghost { display: none; }
+
+      /* Breakdown rows: wrap en mobile */
+      .breakdown-row {
+        flex-direction: column; align-items: flex-start; gap: 4px;
+        padding: 12px 14px;
+      }
+      .bd-val { font-size: 13px; }
+
+      /* Tips: reducir gap */
+      .tip-item { padding: 10px 12px; gap: 10px; }
+      .tip-num  { width: 22px; height: 22px; font-size: 10px; flex-shrink: 0; }
+      .tip-content strong { font-size: 12px; }
+      .tip-content span   { font-size: 11px; }
+
+      /* Benchmark: stack vertical en muy pequeño */
+      .benchmark-box { flex-direction: column; gap: 8px; }
+      .benchmark-icon { font-size: 18px; }
+      .benchmark-text { font-size: 12px; }
+
+      /* Solution items */
+      .solution-items li { font-size: 13px; }
+
+      /* Loss box */
+      .loss-box { padding: 20px 16px; }
+      .loss-label { font-size: 10px; }
+
+      /* Capture form */
+      .form-input, .form-select { font-size: 16px; } /* evita zoom en iOS */
+
+      /* ROI note */
+      .roi-note { font-size: 11px; }
+
+      /* Result desc */
+      .result-desc { font-size: 14px; }
+
+      /* CTA button */
+      .btn { font-size: 15px; padding: 15px 20px; }
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ════════════════ INTRO ════════════════ -->
+  <div class="screen active" id="s-intro">
+    <div class="logo"><svg viewBox="0 0 280 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="lg" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%"   stop-color="#E040FB"/><stop offset="28%"  stop-color="#3D5AFE"/><stop offset="62%"  stop-color="#00E676"/><stop offset="100%" stop-color="#00E5FF"/></linearGradient></defs><text x="0" y="50" font-family="Raleway, sans-serif" font-weight="800" font-size="54" letter-spacing="3" fill="url(#lg)">INFINIX</text></svg></div>
+    <div class="card">
+      <div class="badge badge-cyan"><span class="dot"></span>Diagnóstico gratuito</div>
+      <h1 class="intro-title">Descubre cuánto está <span class="grad">perdiendo tu consulta</span> cada semana</h1>
+      <p class="subtitle">5 preguntas. 2 minutos. Recibirás la estimación real de lo que se escapa cada mes — y el sistema exacto para recuperarlo.</p>
+      <div class="features">
+        <div class="feat">Resultado personalizado</div>
+        <div class="feat">Cálculo con tus propios números</div>
+        <div class="feat">Diagnóstico por tipo de consulta</div>
+        <div class="feat">100% gratuito, sin spam</div>
+      </div>
+      <button class="btn" onclick="startQuiz()">Calcular mi pérdida mensual →</button>
+    </div>
+  </div>
+
+  <!-- ════════════════ QUESTIONS ════════════════ -->
+  <div class="screen" id="s-questions">
+    <div class="logo"><svg viewBox="0 0 280 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="lg" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%"   stop-color="#E040FB"/><stop offset="28%"  stop-color="#3D5AFE"/><stop offset="62%"  stop-color="#00E676"/><stop offset="100%" stop-color="#00E5FF"/></linearGradient></defs><text x="0" y="50" font-family="Raleway, sans-serif" font-weight="800" font-size="54" letter-spacing="3" fill="url(#lg)">INFINIX</text></svg></div>
+    <div class="progress-wrap">
+      <div class="progress-meta">
+        <span id="prog-label">Pregunta 1 de 5</span>
+        <span id="prog-pct">20%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:20%"></div></div>
+      <div class="progress-dots" id="prog-dots"></div>
+    </div>
+    <div class="card">
+      <div class="q-label" id="q-label">01 / 05</div>
+      <div class="q-text"  id="q-text"></div>
+      <div class="q-options" id="q-options"></div>
+      <div class="q-nav">
+        <button class="btn-ghost" id="q-back" onclick="prevQ()" style="display:none">← Atrás</button>
+        <button class="btn" id="q-next" onclick="nextQ()" disabled>Siguiente →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════ EMAIL CAPTURE ════════════════ -->
+  <div class="screen" id="s-capture">
+    <div class="logo"><svg viewBox="0 0 280 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="lg" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%"   stop-color="#E040FB"/><stop offset="28%"  stop-color="#3D5AFE"/><stop offset="62%"  stop-color="#00E676"/><stop offset="100%" stop-color="#00E5FF"/></linearGradient></defs><text x="0" y="50" font-family="Raleway, sans-serif" font-weight="800" font-size="54" letter-spacing="3" fill="url(#lg)">INFINIX</text></svg></div>
+    <div class="card">
+      <div class="badge badge-purple">Último paso</div>
+      <h2 class="capture-heading">¿A dónde enviamos tu diagnóstico?</h2>
+      <p class="capture-sub">Estás a segundos de ver tu cifra real. Te enviamos el resumen completo por email para que lo tengas siempre a mano.</p>
+
+      <div class="result-teaser">
+        <div class="teaser-icon">📊</div>
+        <div class="teaser-text">
+          <strong>Tu diagnóstico personalizado incluye:</strong><br>
+          estimación de pérdida mensual · diagnóstico del tipo de problema · 3 acciones accionables esta semana
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label">Nombre</label>
+        <input class="form-input" type="text" id="f-name" placeholder="Dr. García López" autocomplete="given-name">
+      </div>
+      <div class="form-field">
+        <label class="form-label">Email profesional</label>
+        <input class="form-input" type="email" id="f-email" placeholder="contacto@tuclinica.com" autocomplete="email">
+      </div>
+      <div class="form-field">
+        <label class="form-label">Especialidad</label>
+        <select class="form-select" id="f-specialty">
+          <option value="" disabled selected>Selecciona tu especialidad</option>
+          <option>Dermatología</option>
+          <option>Ginecología / Obstetricia</option>
+          <option>Traumatología / Ortopedia</option>
+          <option>Psiquiatría / Psicología</option>
+          <option>Medicina Estética</option>
+          <option>Medicina General / Familia</option>
+          <option>Nutrición y Dietética</option>
+          <option>Oftalmología</option>
+          <option>Odontología / Clínica Dental</option>
+          <option>Pediatría</option>
+          <option>Cardiología</option>
+          <option>Neurología</option>
+          <option>Otra especialidad</option>
+        </select>
+      </div>
+      <button class="btn" onclick="submitCapture()">Ver mi diagnóstico →</button>
+      <p class="privacy-note">🔒 Tus datos están seguros. Sin spam. Puedes darte de baja en cualquier momento.</p>
+    </div>
+  </div>
+
+  <!-- ════════════════ PROCESSING ════════════════ -->
+  <div class="screen" id="s-processing">
+    <div class="processing-wrap">
+      <div class="spinner"></div>
+      <div class="processing-text">Calculando tu diagnóstico…</div>
+      <div class="processing-sub" id="proc-sub">Analizando tus respuestas</div>
+    </div>
+  </div>
+
+  <!-- ════════════════ RESULT ════════════════ -->
+  <div class="screen" id="s-result">
+    <div class="logo"><svg viewBox="0 0 280 60" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="lg" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%"   stop-color="#E040FB"/><stop offset="28%"  stop-color="#3D5AFE"/><stop offset="62%"  stop-color="#00E676"/><stop offset="100%" stop-color="#00E5FF"/></linearGradient></defs><text x="0" y="50" font-family="Raleway, sans-serif" font-weight="800" font-size="54" letter-spacing="3" fill="url(#lg)">INFINIX</text></svg></div>
+    <div class="card">
+      <div class="badge" id="r-badge"></div>
+      <div class="result-name" id="r-greeting"></div>
+      <h2 class="result-title" id="r-title"></h2>
+      <p class="result-desc" id="r-desc"></p>
+
+      <div class="loss-box">
+        <div class="loss-label">Tu consulta está dejando escapar</div>
+        <div class="loss-amount" id="r-amount"></div>
+        <div class="loss-per">al mes en ingresos no cobrados</div>
+      </div>
+
+      <div class="breakdown">
+        <div class="breakdown-head">Desglose estimado</div>
+        <div id="r-breakdown-rows"></div>
+      </div>
+
+      <!-- Benchmark sectorial -->
+      <div class="benchmark-box" id="r-benchmark"></div>
+
+      <!-- Tips de valor -->
+      <div class="tips-section">
+        <div class="tips-title">3 acciones que puedes aplicar esta semana</div>
+        <div id="r-tips"></div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <div class="solution-box">
+        <div class="solution-title" id="r-sol-title"></div>
+        <ul class="solution-items" id="r-sol-items"></ul>
+      </div>
+
+      <div class="roi-note" id="r-roi"></div>
+
+      <button class="btn" id="r-cta-btn" onclick="openCTA()"></button>
+
+      <p class="result-disclaimer">
+        Estimación basada en promedios del sector médico privado en España y LATAM (ticket medio €90, tasa de conversión 50% sobre leads contactados). Los resultados reales varían según especialidad, zona geográfica y ticket medio de tu consulta.
+      </p>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<script>
+// ═══════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════
+
+const QUESTIONS = [
+  {
+    id: 'q1',
+    label: '01 / 05',
+    text: '¿Cuántos mensajes de WhatsApp, llamadas o DMs de Instagram quedan sin respuesta en una semana normal?',
+    options: [
+      { id:'a', text:'Casi ninguno — 0 a 2 por semana',       sc:{A:2,B:1,C:0}, msgs:1   },
+      { id:'b', text:'Algunos — entre 3 y 7 por semana',      sc:{A:0,B:3,C:1}, msgs:5   },
+      { id:'c', text:'Bastantes — más de 7 por semana',       sc:{A:0,B:1,C:3}, msgs:10  },
+      { id:'d', text:'No llevo la cuenta exactamente',        sc:{A:1,B:1,C:2}, msgs:4   }
+    ]
+  },
+  {
+    id: 'q2',
+    label: '02 / 05',
+    text: '¿Cuántos pacientes nuevos necesita tu consulta cada mes para estar donde quieres estar?',
+    options: [
+      { id:'a', text:'Menos de 5 — acabo de abrir o tengo poca tracción',       sc:{A:3,B:0,C:0} },
+      { id:'b', text:'Entre 5 y 15 pacientes nuevos al mes',                    sc:{A:1,B:2,C:1} },
+      { id:'c', text:'Más de 15 — necesito escalar con fuerza',                 sc:{A:0,B:0,C:3} },
+      { id:'d', text:'Ya tengo demanda suficiente, el problema es gestionarla', sc:{A:0,B:2,C:2} }
+    ]
+  },
+  {
+    id: 'q3',
+    label: '03 / 05',
+    text: 'Cuando alguien te escribe preguntando por una cita y no llega a reservar, ¿qué suele pasar?',
+    options: [
+      { id:'a', text:'Se pierde — no hay seguimiento de ningún tipo',          sc:{A:1,B:3,C:1}, lossRate:0.85 },
+      { id:'b', text:'Hago seguimiento manual cuando tengo un momento',        sc:{A:0,B:2,C:2}, lossRate:0.50 },
+      { id:'c', text:'No me llegan todos — se me escapan mensajes sin ver',    sc:{A:2,B:2,C:0}, lossRate:0.85 },
+      { id:'d', text:'Tengo algo montado pero es muy básico o inconsistente',  sc:{A:0,B:1,C:3}, lossRate:0.35 }
+    ]
+  },
+  {
+    id: 'q4',
+    label: '04 / 05',
+    text: '¿Cuántas citas se cancelan sin avisar o directamente no aparecen en una semana?',
+    options: [
+      { id:'a', text:'Casi ninguna — 0 a 1 por semana',  sc:{A:2,B:1,C:0}, ns:0.5 },
+      { id:'b', text:'Entre 2 y 3 por semana',           sc:{A:0,B:3,C:1}, ns:2.5 },
+      { id:'c', text:'4 o más por semana',               sc:{A:0,B:1,C:3}, ns:5   },
+      { id:'d', text:'No sé exactamente cuántas',        sc:{A:1,B:1,C:2}, ns:2   }
+    ]
+  },
+  {
+    id: 'q5',
+    label: '05 / 05',
+    text: '¿Cuánto tiempo dedica tu consulta cada día a gestión manual — responder mensajes, confirmar citas, hacer recordatorios?',
+    options: [
+      { id:'a', text:'Menos de 30 minutos al día',                        sc:{A:2,B:1,C:0} },
+      { id:'b', text:'Entre 30 minutos y 1 hora al día',                  sc:{A:1,B:2,C:1} },
+      { id:'c', text:'Más de 1 hora al día',                              sc:{A:0,B:1,C:3} },
+      { id:'d', text:'Hay una persona que dedica gran parte de su tiempo', sc:{A:0,B:0,C:3} }
+    ]
+  }
+];
+
+const TICKET = 90; // € ticket medio por consulta
+
+const RESULTS = {
+  A: {
+    badgeTxt: 'Problema de captación',
+    badgeCls: 'badge-cyan',
+    title:    'Tu consulta tiene poca visibilidad — los pacientes no te encuentran todavía',
+    desc:     'Tus respuestas apuntan a un reto de captación activa. No es que pierdas los leads que llegan — es que todavía no llegan suficientes. Con el sistema correcto de Meta Ads + WhatsApp automatizado, puedes cambiarlo en 7 días.',
+    benchmark: '📊 <strong>Dato de sector:</strong> Las consultas médicas privadas que activan Meta Ads con un presupuesto mínimo de 150€/mes reciben entre 18 y 35 contactos nuevos al mes en sus primeros 30 días. El 60% de esos contactos no convierten por falta de respuesta rápida — no por falta de interés.',
+    tips: [
+      {
+        title: 'Optimiza tu ficha de Google Business hoy',
+        desc: 'Añade especialidad, horario actualizado, fotos reales de la consulta y responde las reseñas existentes. Las consultas con ficha optimizada reciben 4x más visitas orgánicas sin invertir un euro en publicidad.'
+      },
+      {
+        title: 'Activa un mensaje de bienvenida automático en WhatsApp',
+        desc: 'Sin apps ni pagos: en WhatsApp Business → Herramientas de empresa → Mensaje de bienvenida. Escribe un mensaje que confirme recepción y dé una hora estimada de respuesta. Reduce el 40% de leads que se van al no recibir acuse de recibo inmediato.'
+      },
+      {
+        title: 'Crea una historia de Instagram fija con tu proceso de reserva',
+        desc: 'Una historia destacada que explique en 3 pasos cómo pedir cita actúa como un FAQ siempre visible. Reduce preguntas repetitivas y aumenta la confianza del paciente que llega por primera vez antes de escribirte.'
+      }
+    ],
+    solTitle: 'Lo que incluye el Paquete Primer Impulso:',
+    solItems: [
+      'Landing page optimizada para conversión — diseñada para que el paciente pida cita, no solo visite',
+      'Agente de chat web en tu landing: responde dudas del paciente, explica tu consulta y agenda directamente — 24/7 sin intervención tuya',
+      'Sesión mensual de estrategia personalizada: posicionamiento en redes, SEO local y cómo lanzar y optimizar tus campañas de Meta Ads',
+      'Sistema activo en menos de 7 días desde el inicio'
+    ],
+    roiTxt:  'Con la cuota del Paquete 01 (197€/mes) recuperas la inversión captando <span class="hi">solo 3 pacientes nuevos al mes</span>.',
+    cta:     'Quiero empezar a captar esta semana →',
+    pkg:     'Primer Impulso · 197€/mes'
+  },
+  B: {
+    badgeTxt: 'Problema de conversión',
+    badgeCls: 'badge-purple',
+    title:    'Tienes demanda — pero los pacientes interesados se escapan antes de reservar',
+    desc:     'Tus números muestran que la demanda ya existe. El problema es que los leads se enfrían antes de reservar, y las citas se pierden sin recordatorio. Eso se resuelve con automatización de seguimiento, no con más publicidad.',
+    benchmark: '📊 <strong>Dato de sector:</strong> El 78% de los pacientes que no reciben respuesta en los primeros 5 minutos contactan a otra consulta. Con un seguimiento activo en las primeras 2 horas, las consultas recuperan entre el 40% y el 55% de los leads que de otro modo se perderían.',
+    tips: [
+      {
+        title: 'Implementa el "rescate de 2 horas"',
+        desc: 'Cada vez que un lead no reserva después del primer mensaje, envía un seguimiento manual a las 2 horas con este texto: "Hola [nombre], vi que preguntaste por [especialidad]. ¿Tienes alguna duda o quieres que te reserve un hueco para esta semana?" Convierte entre un 20-30% de leads que ya se habían enfriado.'
+      },
+      {
+        title: 'Activa recordatorios de cita por WhatsApp 24h antes',
+        desc: 'El 80% de los no-shows no cancelan por falta de interés — simplemente se les olvidó. Un recordatorio manual la tarde anterior reduce los huecos vacíos entre un 30-35%. Si usas Google Calendar, puedes añadir el número y enviar el recordatorio en 30 segundos por cita.'
+      },
+      {
+        title: 'Pide reseña en Google justo después de la consulta',
+        desc: 'El mejor momento es 30 minutos tras la consulta, cuando la experiencia está fresca. Un mensaje de WhatsApp con el enlace directo a tu ficha de Google tiene una tasa de conversión del 25-35%. Crea el enlace en Google Business → Pedir reseñas y guárdalo como respuesta rápida en WhatsApp Business.'
+      }
+    ],
+    solTitle: 'Si quieres que esto funcione solo sin tocar nada:',
+    solItems: [
+      'Agente de WhatsApp que contacta al lead en menos de 2 minutos después de que escribe',
+      'Seguimiento automático hasta que reservan — sin que tú ni tu equipo haga nada',
+      'Recordatorios automáticos que reducen cancelaciones y no-shows hasta un 35%',
+      'Agente de reseñas Google post-consulta para generar confianza y más captación orgánica'
+    ],
+    roiTxt:  'Con la cuota del Paquete 02 (297€/mes) recuperas la inversión recuperando <span class="hi">solo 4 pacientes perdidos al mes</span>.',
+    cta:     'Quiero recuperar mis leads esta semana →',
+    pkg:     'Agenda Activa · 297€/mes'
+  },
+  C: {
+    badgeTxt: 'Problema de desbordamiento',
+    badgeCls: 'badge-pink',
+    title:    'Tu consulta funciona — pero demasiadas cosas dependen de ti o de tu equipo',
+    desc:     'Tienes volumen. El problema es que tu equipo está gestionando manualmente lo que ya podría funcionar solo. Cada hora en WhatsApp, confirmaciones y recordatorios es tiempo que no estás atendiendo pacientes ni escalando.',
+    benchmark: '📊 <strong>Dato de sector:</strong> Las consultas con más de 40 citas semanales dedican en promedio 12 horas de trabajo administrativo a la semana — equivalente a 1,5 días laborables completos. El 70% de esas tareas (confirmaciones, recordatorios, respuestas FAQ) son automatizables sin cambiar el flujo de trabajo actual.',
+    tips: [
+      {
+        title: 'Crea un árbol de respuestas rápidas en WhatsApp Business',
+        desc: 'WhatsApp Business permite guardar hasta 50 respuestas rápidas con "/". Define las 10 preguntas más repetidas (precios, ubicación, proceso, seguros) y crea una respuesta para cada una. Tu equipo responderá en 5 segundos en lugar de 2 minutos, sin errores ni variaciones de mensaje.'
+      },
+      {
+        title: 'Establece un protocolo de triaje de mensajes en 3 niveles',
+        desc: '🟢 Urgente (dolor, síntoma agudo) → respuesta inmediata. 🟡 Cita nueva / consulta → respuesta en <2h. 🔴 Info general / precios → respuesta rápida guardada. Con este sistema, tu recepcionista procesa el mismo volumen en la mitad del tiempo y prioriza lo que realmente importa.'
+      },
+      {
+        title: 'Bloquea 30 minutos al día solo para reactivación de pacientes dormidos',
+        desc: 'Selecciona 10 pacientes que no han vuelto en más de 3 meses y envíales un mensaje personalizado: "Hola [nombre], hace tiempo que no te vemos por aquí. ¿Todo bien? Si necesitas revisión o tienes alguna consulta, tenemos huecos esta semana." La tasa de respuesta supera el 35% y el coste de reactivación es cero.'
+      }
+    ],
+    solTitle: 'Si quieres que todo esto funcione sin intervención humana:',
+    solItems: [
+      'WhatsApp avanzado multicanal + automatización completa de flujos de pacientes',
+      'Agente de Voz IA 24/7 para llamadas fuera de horario — sin que nadie tenga que coger el teléfono',
+      'Reactivación automática de pacientes inactivos o que llevan tiempo sin volver',
+      'Respuestas automáticas de Instagram para capturar leads de DMs y anuncios',
+      'Panel de control con métricas de citas, leads y ocupación en tiempo real'
+    ],
+    roiTxt:  'Con la cuota del Paquete 03 (497€/mes) recuperas la inversión en el primer mes con <span class="hi">tiempo liberado + pacientes recuperados</span>.',
+    cta:     'Quiero que mi consulta funcione sola →',
+    pkg:     'Piloto Automático · 497€/mes'
+  }
+};
+
+// ─── CONFIGURACIÓN ───────────────────────────────────────
+// 1. Reemplaza con tu link de WhatsApp, Calendly o landing
+const CTA_URL = 'https://wa.me/tuNumero?text=Hola%2C%20hice%20el%20diagn%C3%B3stico%20y%20quiero%20hablar';
+
+// 2. Pega aquí el webhook URL de tu workflow en GHL
+//    GHL → Automations → New Workflow → Trigger: Inbound Webhook → Copy URL
+const GHL_WEBHOOK_URL = 'https://services.leadconnectorhq.com/hooks/Ea4KTsdrTfhptv7k6ARd/webhook-trigger/34ccc4ef-1c66-493a-9441-0a1992d4d94e';
+
+
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+
+let currentQ  = 0;
+let answers   = {};
+let resultAvatar = 'B';
+let lossData  = {};
+
+
+// ═══════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById(id);
+  el.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function startQuiz() {
+  currentQ = 0; answers = {};
+  renderQuestion();
+  showScreen('s-questions');
+}
+
+
+// ═══════════════════════════════════════════════════════
+// QUESTION RENDERING
+// ═══════════════════════════════════════════════════════
+
+function renderQuestion() {
+  const q    = QUESTIONS[currentQ];
+  const tot  = QUESTIONS.length;
+  const pct  = Math.round((currentQ + 1) / tot * 100);
+
+  document.getElementById('prog-label').textContent = `Pregunta ${currentQ + 1} de ${tot}`;
+  document.getElementById('prog-pct').textContent   = pct + '%';
+  document.getElementById('prog-fill').style.width  = pct + '%';
+  document.getElementById('q-label').textContent    = q.label;
+  document.getElementById('q-text').textContent     = q.text;
+
+  // Dots
+  const dotsEl = document.getElementById('prog-dots');
+  dotsEl.innerHTML = '';
+  for (let i = 0; i < tot; i++) {
+    const d = document.createElement('div');
+    d.className = 'pdot' + (i < currentQ ? ' done' : i === currentQ ? ' active' : '');
+    dotsEl.appendChild(d);
+  }
+
+  // Options
+  const optsEl = document.getElementById('q-options');
+  optsEl.innerHTML = '';
+  q.options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'q-opt' + (answers[q.id] === opt.id ? ' sel' : '');
+    btn.innerHTML = `<div class="opt-radio"></div><span>${opt.text}</span>`;
+    btn.onclick = () => selectOpt(opt.id);
+    optsEl.appendChild(btn);
+  });
+
+  // Nav
+  const nextBtn = document.getElementById('q-next');
+  const backBtn = document.getElementById('q-back');
+  nextBtn.textContent = currentQ === tot - 1 ? 'Ver mi resultado →' : 'Siguiente →';
+  nextBtn.disabled    = !answers[q.id];
+  backBtn.style.display = currentQ > 0 ? '' : 'none';
+}
+
+function selectOpt(id) {
+  answers[QUESTIONS[currentQ].id] = id;
+  renderQuestion();
+}
+
+function nextQ() {
+  if (!answers[QUESTIONS[currentQ].id]) return;
+  if (currentQ < QUESTIONS.length - 1) {
+    currentQ++;
+    renderQuestion();
+  } else {
+    showScreen('s-capture');
+  }
+}
+
+function prevQ() {
+  if (currentQ > 0) { currentQ--; renderQuestion(); }
+}
+
+
+// ═══════════════════════════════════════════════════════
+// CAPTURE SUBMIT
+// ═══════════════════════════════════════════════════════
+
+function submitCapture() {
+  const email = document.getElementById('f-email').value.trim();
+  if (!email || !email.includes('@')) {
+    document.getElementById('f-email').focus();
+    document.getElementById('f-email').style.borderColor = '#EF4444';
+    setTimeout(() => { document.getElementById('f-email').style.borderColor = ''; }, 2000);
+    return;
+  }
+
+  showScreen('s-processing');
+  animateProcessing();
+
+  setTimeout(() => {
+    computeResult();
+    renderResult();
+    sendToGHL(); // ← envía el lead a GHL en segundo plano
+    showScreen('s-result');
+  }, 2500);
+}
+
+function animateProcessing() {
+  const msgs = [
+    'Analizando tus respuestas…',
+    'Calculando leads perdidos…',
+    'Estimando impacto económico…',
+    'Generando tu diagnóstico…'
+  ];
+  let i = 0;
+  const el = document.getElementById('proc-sub');
+  const iv = setInterval(() => {
+    i++;
+    if (i < msgs.length) el.textContent = msgs[i];
+    else clearInterval(iv);
+  }, 600);
+}
+
+
+// ═══════════════════════════════════════════════════════
+// SCORING & CALCULATION
+// ═══════════════════════════════════════════════════════
+
+function computeResult() {
+  // Score avatars
+  const sc = { A:0, B:0, C:0 };
+  QUESTIONS.forEach(q => {
+    const opt = q.options.find(o => o.id === answers[q.id]);
+    if (opt && opt.sc) { sc.A += opt.sc.A||0; sc.B += opt.sc.B||0; sc.C += opt.sc.C||0; }
+  });
+  resultAvatar = sc.A >= sc.B && sc.A >= sc.C ? 'A' : sc.B >= sc.C ? 'B' : 'C';
+
+  // Loss calculation
+  const q1opt = QUESTIONS[0].options.find(o => o.id === answers['q1']);
+  const q3opt = QUESTIONS[2].options.find(o => o.id === answers['q3']);
+  const q4opt = QUESTIONS[3].options.find(o => o.id === answers['q4']);
+
+  const msgsPerWeek   = q1opt ? (q1opt.msgs   || 4)   : 4;
+  const lossRate      = q3opt ? (q3opt.lossRate|| 0.5) : 0.5;
+  const noshowPerWeek = q4opt ? (q4opt.ns      || 2)   : 2;
+
+  const leadLoss   = Math.round(msgsPerWeek * 4 * lossRate * TICKET);
+  const noshowLoss = Math.round(noshowPerWeek * 4 * TICKET);
+  const total      = Math.max(Math.round((leadLoss + noshowLoss) / 50) * 50, 150);
+
+  lossData = { leadLoss, noshowLoss, total };
+}
+
+
+// ═══════════════════════════════════════════════════════
+// RESULT RENDERING
+// ═══════════════════════════════════════════════════════
+
+function renderResult() {
+  const r    = RESULTS[resultAvatar];
+  const name = document.getElementById('f-name').value.trim().split(' ')[0];
+
+  // Badge
+  const badge = document.getElementById('r-badge');
+  badge.textContent = r.badgeTxt;
+  badge.className   = 'badge ' + r.badgeCls;
+
+  // Greeting + Title + Desc
+  document.getElementById('r-greeting').textContent = name ? `Para ${name}:` : 'Tu diagnóstico:';
+  document.getElementById('r-title').textContent    = r.title;
+  document.getElementById('r-desc').textContent     = r.desc;
+
+  // Loss amount
+  document.getElementById('r-amount').textContent = `€${lossData.total.toLocaleString('es-ES')}`;
+
+  // Breakdown rows
+  document.getElementById('r-breakdown-rows').innerHTML = `
+    <div class="breakdown-row">
+      <span>Leads que no convierten (sin seguimiento)</span>
+      <span class="bd-val">€${lossData.leadLoss.toLocaleString('es-ES')}/mes</span>
+    </div>
+    <div class="breakdown-row">
+      <span>Citas canceladas o no-shows sin recordatorio</span>
+      <span class="bd-val">€${lossData.noshowLoss.toLocaleString('es-ES')}/mes</span>
+    </div>
+    <div class="breakdown-row total">
+      <span>Total estimado mensual</span>
+      <span class="bd-val total-val">€${lossData.total.toLocaleString('es-ES')}/mes</span>
+    </div>
+  `;
+
+  // Benchmark
+  document.getElementById('r-benchmark').innerHTML = `
+    <div class="benchmark-icon">📊</div>
+    <div class="benchmark-text">${r.benchmark.replace('📊 ', '')}</div>
+  `;
+
+  // Tips
+  document.getElementById('r-tips').innerHTML = r.tips.map((t, i) => `
+    <div class="tip-item">
+      <div class="tip-num">${i + 1}</div>
+      <div class="tip-content">
+        <strong>${t.title}</strong>
+        <span>${t.desc}</span>
+      </div>
+    </div>
+  `).join('');
+
+  // Solution
+  document.getElementById('r-sol-title').textContent = r.solTitle;
+  document.getElementById('r-sol-items').innerHTML   = r.solItems.map(i => `<li>${i}</li>`).join('');
+
+  // ROI note
+  document.getElementById('r-roi').innerHTML = r.roiTxt;
+
+  // CTA
+  document.getElementById('r-cta-btn').textContent = r.cta;
+}
+
+function openCTA() {
+  window.open(CTA_URL, '_blank');
+}
+
+// ═══════════════════════════════════════════════════════
+// GHL WEBHOOK INTEGRATION
+// ═══════════════════════════════════════════════════════
+
+function sendToGHL() {
+  const r       = RESULTS[resultAvatar];
+  const name    = document.getElementById('f-name').value.trim();
+  const email   = document.getElementById('f-email').value.trim();
+  const spec    = document.getElementById('f-specialty').value;
+  const parts   = name.split(' ');
+  const avatarLabels = { A: 'primer-impulso', B: 'agenda-activa', C: 'piloto-automatico' };
+
+  const payload = {
+    // Campos estándar GHL
+    firstName:  parts[0] || '',
+    lastName:   parts.slice(1).join(' ') || '',
+    email:      email,
+    tags:       [
+      'lead-magnet-quiz',
+      'infinix-quiz-2026',
+      'avatar-' + resultAvatar.toLowerCase(),
+      avatarLabels[resultAvatar]
+    ],
+    // Campos custom (crear en GHL → Settings → Custom Fields)
+    especialidad:        spec,
+    avatar_tipo:         resultAvatar + ' — ' + r.badgeTxt,
+    perdida_mensual_eur: lossData.total,
+    perdida_leads:       lossData.leadLoss,
+    perdida_noshows:     lossData.noshowLoss,
+    paquete_sugerido:    r.pkg,
+    quiz_fecha:          new Date().toISOString().split('T')[0],
+    // Para que GHL sepa a qué secuencia mandar al lead
+    secuencia_nurture:   'nurture-avatar-' + resultAvatar.toLowerCase()
+  };
+
+  // Fire-and-forget — no bloquea la UI
+  if (!GHL_WEBHOOK_URL.includes('TU-WEBHOOK-ID')) {
+    fetch(GHL_WEBHOOK_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload)
+    }).catch(() => {}); // silencia errores de red
+  }
+}
+</script>
+</body>
+</html>
