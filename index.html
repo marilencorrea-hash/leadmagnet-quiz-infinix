@@ -850,10 +850,15 @@ function showScreen(id) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+function trackEvent(name, params) {
+  if (typeof fbq !== 'undefined') fbq('trackCustom', name, params || {});
+}
+
 function startQuiz() {
   currentQ = 0; answers = {};
   renderQuestion();
   showScreen('s-questions');
+  trackEvent('QuizStarted');
 }
 
 
@@ -912,6 +917,7 @@ function nextQ() {
     renderQuestion();
   } else {
     showScreen('s-capture');
+    trackEvent('QuizCompleted', { preguntas: QUESTIONS.length });
   }
 }
 
@@ -933,6 +939,8 @@ function submitCapture() {
     return;
   }
 
+  trackEvent('LeadFormSubmitted', { email: document.getElementById('f-email').value.trim() });
+  if (typeof fbq !== 'undefined') fbq('track', 'Lead');
   showScreen('s-processing');
   animateProcessing();
 
